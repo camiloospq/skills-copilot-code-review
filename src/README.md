@@ -6,6 +6,8 @@ A super simple FastAPI application that allows students to view and sign up for 
 
 - View all available extracurricular activities
 - Sign up for activities
+- Read active school announcements from the database
+- Manage announcements after signing in as a teacher or administrator
 
 ## Getting Started
 
@@ -27,24 +29,38 @@ A super simple FastAPI application that allows students to view and sign up for 
 
 ## API Endpoints
 
-| Method | Endpoint                                                          | Description                                                         |
-| ------ | ----------------------------------------------------------------- | ------------------------------------------------------------------- |
-| GET    | `/activities`                                                     | Get all activities with their details and current participant count |
-| POST   | `/activities/{activity_name}/signup?email=student@mergington.edu` | Sign up for an activity                                             |
+| Method | Endpoint | Description |
+| ------ | -------- | ----------- |
+| GET | `/activities` | Get all activities with optional day and time filtering |
+| POST | `/activities/{activity_name}/signup?email=student@mergington.edu&teacher_username=principal` | Sign up a student for an activity |
+| POST | `/activities/{activity_name}/unregister?email=student@mergington.edu&teacher_username=principal` | Remove a student from an activity |
+| POST | `/auth/login?username=principal&password=admin789` | Sign in a teacher or administrator |
+| GET | `/auth/check-session?username=principal` | Validate a signed-in user |
+| GET | `/announcements` | Get active announcements for the public site |
+| GET | `/announcements/manage?teacher_username=principal` | Get all announcements for the management dialog |
+| POST | `/announcements?teacher_username=principal` | Create an announcement with JSON body |
+| PUT | `/announcements/{announcement_id}?teacher_username=principal` | Update an announcement with JSON body |
+| DELETE | `/announcements/{announcement_id}?teacher_username=principal` | Delete an announcement |
 
 ## Data Model
 
-The application uses a simple data model with meaningful identifiers:
+The application stores data in MongoDB and seeds example records during startup when collections are empty.
 
-1. **Activities** - Uses activity name as identifier:
-
+1. Activities
    - Description
-   - Schedule
-   - Maximum number of participants allowed
-   - List of student emails who are signed up
+   - Structured schedule details
+   - Maximum participant count
+   - Registered student email addresses
 
-2. **Students** - Uses email as identifier:
-   - Name
-   - Grade level
+2. Teachers
+   - Username
+   - Display name
+   - Argon2 password hash
+   - Role
 
-All data is stored in memory, which means data will be reset when the server restarts.
+3. Announcements
+   - Title
+   - Message
+   - Optional start date
+   - Required expiration date
+   - Created and updated timestamps
